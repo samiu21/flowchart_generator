@@ -1,4 +1,4 @@
-// Wait until OpenCV.js is loaded
+// // Wait until OpenCV.js is loaded
 cv.onRuntimeInitialized = () => {
     const video = document.getElementById('videoInput');
     const canvas = document.getElementById('canvas');
@@ -7,6 +7,7 @@ cv.onRuntimeInitialized = () => {
     // Start the camera stream
     navigator.mediaDevices.getUserMedia({ video: true })
         .then(function (stream) {
+            console.log("Camera accessed successfully!"); // Log success
             video.srcObject = stream;
             video.play();
             
@@ -14,10 +15,12 @@ cv.onRuntimeInitialized = () => {
             processVideo(video, canvas, ctx);
         })
         .catch(function (err) {
+            console.error("Error accessing camera:", err); // Log error
             alert("Error accessing camera: " + err);
         });
 };
 
+// Process the video feed and display it on canvas
 function processVideo(video, canvas, ctx) {
     // Create a loop to process each frame
     function processFrame() {
@@ -37,6 +40,7 @@ function processVideo(video, canvas, ctx) {
     processFrame(); // Start processing
 }
 
+// Function to process the canvas image (grayscale + threshold)
 function processImage(canvas) {
     const src = cv.imread(canvas); // Read image from canvas
     const dst = new cv.Mat();
