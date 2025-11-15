@@ -4,14 +4,17 @@ let videoStarted = false;
 const video = document.createElement('video'); // hidden video
 video.autoplay = true;
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+const canvasMain = document.getElementById('canvasMain');
+const ctxMain = canvasMain.getContext('2d');
+
+const canvasPreview = document.getElementById('canvasPreview');
+const ctxPreview = canvasPreview.getContext('2d');
 
 cv.onRuntimeInitialized = () => {
     console.log("OpenCV.js ready.");
 };
 
-// Start Camera + shape detection
+// Start Camera
 document.getElementById('startBtn').addEventListener('click', async () => {
     try {
         if (!videoStarted) {
@@ -19,10 +22,13 @@ document.getElementById('startBtn').addEventListener('click', async () => {
             video.srcObject = stream;
             await video.play();
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvasMain.width = video.videoWidth;
+            canvasMain.height = video.videoHeight;
+            canvasPreview.width = video.videoWidth;
+            canvasPreview.height = video.videoHeight;
 
-            startProcessing(video, canvas);
+            startProcessing(video, canvasMain);
+
             videoStarted = true;
         }
     } catch (err) {
@@ -31,31 +37,32 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     }
 });
 
-// Capture only when user presses Capture
+// Capture preview (does not save)
 document.getElementById('captureBtn').addEventListener('click', () => {
-    if (!videoStarted) {
-        alert("Camera is not started yet!");
-        return;
-    }
-    const image = canvas.toDataURL('image/png');
+    if (!videoStarted) return alert("Start camera first!");
+    ctxPreview.clearRect(0, 0, canvasPreview.width, canvasPreview.height);
+    ctxPreview.drawImage(canvasMain, 0, 0); // Copy main canvas to preview
+});
+
+// Save preview
+document.getElementById('saveBtn').addEventListener('click', () => {
+    const image = canvasPreview.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = image;
     a.download = "flowchart_capture.png";
     a.click();
 });
 
-// Reset canvas
+// Reset preview canvas
 document.getElementById('resetBtn').addEventListener('click', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctxPreview.clearRect(0, 0, canvasPreview.width, canvasPreview.height);
 });
 
-// Processing loop
+// Main processing loop
 function startProcessing(video, canvas) {
     function loop() {
-        ctx.drawImage(video, 0, 0);
-
+        ctxMain.drawImage(video, 0, 0);
         detectShapes(canvas);
-
         requestAnimationFrame(loop);
     }
     loop();
@@ -82,22 +89,18 @@ function detectShapes(canvas) {
         let approx = new cv.Mat();
         cv.approxPolyDP(cnt, approx, 0.04 * peri, true);
 
-        // MatVector for drawContours
         let mv = new cv.MatVector();
         mv.push_back(approx);
-
         let color = new cv.Scalar(0,255,0,255); // green
 
         if (approx.rows === 3) {
-            cv.drawContours(src, mv, 0, color, 3); // triangle
+            cv.drawContours(src, mv, 0, color, 3);
         } else if (approx.rows === 4) {
-            cv.drawContours(src, mv, 0, color, 3); // square/rectangle
+            cv.drawContours(src, mv, 0, color, 3);
         } else {
             let area = cv.contourArea(cnt);
-            let circularity = (4 * Math.PI * area) / (peri*peri);
-            if (circularity > 0.7) {
-                cv.drawContours(src, mv, 0, color, 3); // circle
-            }
+            let circularity = (4*Math.PI*area)/(peri*peri);
+            if (circularity > 0.7) cv.drawContours(src, mv, 0, color, 3);
         }
 
         approx.delete();
@@ -107,7 +110,6 @@ function detectShapes(canvas) {
 
     cv.imshow(canvas, src);
 
-    // Clean up
     src.delete();
     gray.delete();
     blurred.delete();
