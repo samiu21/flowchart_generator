@@ -9,18 +9,22 @@
 <body>
     <h1>Handwritten Flowchart to Digital Flowchart</h1>
     
-    <!-- Video Feed for Camera -->
+    <!-- Video Feed -->
     <video id="videoInput" width="640" height="480" autoplay></video>
-    
-    <!-- Canvas to display processed image -->
+
+    <!-- Canvas for displaying RAW video -->
     <canvas id="canvas"></canvas>
 
-    <!-- Buttons to capture image or reset -->
+    <!-- Canvas for OpenCV processed image -->
+    <canvas id="processedCanvas"></canvas>
+
+    <!-- Buttons -->
     <button id="captureBtn">Capture Image</button>
     <button id="resetBtn">Reset</button>
-    
-    <!-- OpenCV.js library -->
+
+    <!-- OpenCV.js -->
     <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+    <!-- Your JS -->
     <script src="script.js"></script>
 </body>
 </html>

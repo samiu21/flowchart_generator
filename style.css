@@ -10,7 +10,7 @@ h1 {
     margin-bottom: 20px;
 }
 
-#canvas {
+#canvas, #processedCanvas {
     border: 1px solid #000;
     margin-top: 20px;
     max-width: 100%;
@@ -46,3 +46,4 @@ button:hover {
         font-size: 18px;
     }
 }
+
