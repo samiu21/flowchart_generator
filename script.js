@@ -1,9 +1,9 @@
-// // Wait until OpenCV.js is loaded
+// Wait until OpenCV.js is loaded
 cv.onRuntimeInitialized = () => {
     const video = document.getElementById('videoInput');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-
+    
     // Start the camera stream
     navigator.mediaDevices.getUserMedia({ video: true })
         .then(function (stream) {
@@ -11,8 +11,13 @@ cv.onRuntimeInitialized = () => {
             video.srcObject = stream;
             video.play();
             
-            // Process the frames from the video
-            processVideo(video, canvas, ctx);
+            // When video is playing, set canvas dimensions
+            video.onplaying = () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                console.log('Video is playing, canvas dimensions set:', canvas.width, canvas.height);
+                processVideo(video, canvas, ctx);
+            };
         })
         .catch(function (err) {
             console.error("Error accessing camera:", err); // Log error
@@ -24,9 +29,11 @@ cv.onRuntimeInitialized = () => {
 function processVideo(video, canvas, ctx) {
     // Create a loop to process each frame
     function processFrame() {
-        // Set canvas size to match video dimensions
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // Ensure canvas dimensions match video size
+        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        }
         
         // Draw the video frame to the canvas
         ctx.drawImage(video, 0, 0);
@@ -58,3 +65,20 @@ function processImage(canvas) {
     src.delete();
     dst.delete();
 }
+
+// Capture image functionality
+document.getElementById('captureBtn').addEventListener('click', () => {
+    const canvas = document.getElementById('canvas');
+    const img = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = img;
+    link.download = 'flowchart_image.png';
+    link.click();
+});
+
+// Reset functionality
+document.getElementById('resetBtn').addEventListener('click', () => {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+});

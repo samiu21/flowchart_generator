@@ -2,17 +2,47 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 20px;
+    background-color: #f4f4f4;
 }
 
 h1 {
     color: #4CAF50;
+    margin-bottom: 20px;
 }
 
 #canvas {
     border: 1px solid #000;
     margin-top: 20px;
+    max-width: 100%;
+    height: auto;
 }
 
 #videoInput {
     border: 1px solid #ccc;
+    max-width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    margin-top: 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+@media (max-width: 600px) {
+    video, canvas {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+        font-size: 18px;
+    }
 }
