@@ -41,3 +41,11 @@ button:hover {
         font-size: 18px;
     }
 }
+#canvasMain, #canvasPreview {
+    border: 1px solid #000;
+    display: block;      /* remove inline gaps */
+    margin: 10px auto;   /* center horizontally */
+    max-width: 100%;
+    height: auto;
+    background-color: #f4f4f4; /* optional */
+}
