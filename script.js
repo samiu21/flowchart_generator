@@ -1,39 +1,72 @@
 let stream = null;
 let videoStarted = false;
+let opencvReady = false;
 
 const video = document.createElement('video'); // hidden video
 video.autoplay = true;
+video.playsInline = true;
+video.style.display = 'none'; // hide video element
 
-const canvasMain = document.getElementById('canvasMain');
-const ctxMain = canvasMain.getContext('2d');
+let canvasMain, ctxMain, canvasPreview, ctxPreview;
 
-const canvasPreview = document.getElementById('canvasPreview');
-const ctxPreview = canvasPreview.getContext('2d');
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', () => {
+    canvasMain = document.getElementById('canvasMain');
+    ctxMain = canvasMain.getContext('2d');
+    
+    canvasPreview = document.getElementById('canvasPreview');
+    ctxPreview = canvasPreview.getContext('2d');
+});
 
-cv.onRuntimeInitialized = () => {
-    console.log("OpenCV.js ready.");
-};
+// OpenCV initialization - will be called when opencv.js loads
+function onOpenCvReady() {
+    opencvReady = true;
+    console.log("OpenCV.js ready!");
+}
+
+// Check if opencv is already loaded
+if (typeof cv !== 'undefined' && cv.Mat) {
+    opencvReady = true;
+    console.log("OpenCV.js already loaded.");
+}
 
 // Start Camera
 document.getElementById('startBtn').addEventListener('click', async () => {
     try {
         if (!videoStarted) {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            // Request camera access
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            });
+            
             video.srcObject = stream;
-            await video.play();
+            
+            // Add video to DOM so it can be played
+            document.body.appendChild(video);
+            
+            // Wait for video to be ready
+            video.onloadedmetadata = () => {
+                console.log("Video loaded:", video.videoWidth, video.videoHeight);
+                
+                canvasMain.width = video.videoWidth;
+                canvasMain.height = video.videoHeight;
+                canvasPreview.width = video.videoWidth;
+                canvasPreview.height = video.videoHeight;
 
-            canvasMain.width = video.videoWidth;
-            canvasMain.height = video.videoHeight;
-            canvasPreview.width = video.videoWidth;
-            canvasPreview.height = video.videoHeight;
-
-            startProcessing(video, canvasMain);
-
-            videoStarted = true;
+                if (opencvReady) {
+                    startProcessing(video, canvasMain);
+                    videoStarted = true;
+                } else {
+                    alert("OpenCV not ready yet. Please try again.");
+                }
+            };
         }
     } catch (err) {
         console.error("Camera access failed:", err);
-        alert("Camera access failed: " + err);
+        alert("Camera access failed: " + err.message);
     }
 });
 
